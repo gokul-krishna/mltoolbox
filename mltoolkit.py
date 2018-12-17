@@ -8,7 +8,10 @@ Description : My collection of useful functions for Machine Learning.
 
 import cv2
 import math
+import random
 
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 from PIL import Image
@@ -24,7 +27,6 @@ plt.style.use('ggplot')
 def multi_plot(fnames, ncols=3):
     """
         Display multiple images in a grid structure
-
         fnames: list of file name with full/relative path
     """
     assert ncols != 0
@@ -45,6 +47,7 @@ def multi_plot(fnames, ncols=3):
 def imread(fname):
     im = cv2.imread(str(fname))
     # openCV by default uses BGR ordering but we need RBG usually
+    # height x width x channels
     return cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
 
@@ -61,6 +64,14 @@ def center_crop(im, min_sz=None):
     start_r = math.ceil((r - min_sz) / 2)
     start_c = math.ceil((c - min_sz) / 2)
     return crop(im, start_r, start_c, min_sz, min_sz)
+
+
+def random_crop(x, height, width):
+    """ Returns a random crop of a image"""
+    r, c, _ = x.shape
+    start_r = math.floor(random.uniform(0, r - height))
+    start_c = math.floor(random.uniform(0, c - width))
+    return crop(x, start_r, start_c, height, width)
 
 
 stats_dict = {
@@ -80,3 +91,20 @@ def parallel(func, job_list, n_jobs=16):
         for f in progress_bar(as_completed(futures), total=len(job_list)):
             pass
     return [f.result() for f in futures]
+
+
+def folder2df(fpath=None):
+    if fpath is not None:
+        fnames = sorted(fpath.glob('**/*.jpg'))
+        df = pd.DataFrame(fnames, columns=['fname'])
+        df['label'] = df['fname'].apply(lambda x: str(x).split('/')[-2]
+                                        ).astype('category')
+        return df
+
+
+def split_df(df, train_ratio=0.8):
+    np.random.seed(42)
+    mask = np.random.random(df.shape[0]) < train_ratio
+    train = df[mask].copy()
+    valid = df[~mask].copy()
+    return train, valid
