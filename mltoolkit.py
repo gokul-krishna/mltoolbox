@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@author: Gokul
-
-Description : My collection of useful functions for Machine Learning.
+Description : Collection of useful functions for ML/DL.
 """
 
 import cv2
@@ -14,7 +12,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from PIL import Image
+from PIL import Image, ExifTags
 from fastprogress import progress_bar
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -41,6 +39,20 @@ def multi_plot(fnames, ncols=3):
         ax.set_title(fname.split('/')[-1], size=20)
     plt.tight_layout()
     plt.show()
+
+
+# Images Meta
+def get_exif(im, remove_binary=True):
+    if hasattr(im, '_getexif'):
+        exif = {ExifTags.TAGS[k]: v
+                for k, v in im._getexif().items()
+                if k in ExifTags.TAGS
+                }
+        if remove_binary:
+            exif = {k: exif[k] for k in exif if type(exif[k]) is not bytes}
+        return exif
+    else:
+        return {}
 
 
 # Images
@@ -107,4 +119,6 @@ def split_df(df, train_ratio=0.8):
     mask = np.random.random(df.shape[0]) < train_ratio
     train = df[mask].copy()
     valid = df[~mask].copy()
+    train.reset_index(inplace=True, drop=True)
+    valid.reset_index(inplace=True, drop=True)
     return train, valid
