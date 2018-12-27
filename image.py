@@ -66,6 +66,6 @@ stats_dict = {
 }
 
 
-def noralize_image(im, stat_type='image_net'):
+def normalize_image(im, stat_type='image_net'):
     stats = stats_dict[stat_type]
     return (im - stats[0]) / stats[1]
