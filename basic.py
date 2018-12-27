@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Description : Collection of useful functions for ML.
+Description: Collection of useful functions for ML.
 """
 
 import numpy as np
