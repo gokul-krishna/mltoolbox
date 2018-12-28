@@ -7,6 +7,10 @@ Description: Collection of useful functions for ML.
 import numpy as np
 import pandas as pd
 
+from fs.osfs import OSFS
+from fs.memoryfs import MemoryFS
+from fs.copy import copy_fs
+
 from IPython.display import display
 from fastprogress import progress_bar
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -25,6 +29,18 @@ def parallel(func, job_list, n_jobs=16):
         for f in progress_bar(as_completed(futures), total=len(job_list)):
             pass
     return [f.result() for f in futures]
+
+
+# In Memory
+def to_ram(dir_path):
+    mem_fs = MemoryFS()
+    with OSFS(dir_path) as data_fs:
+        copy_fs(data_fs, mem_fs, workers=8)
+    return mem_fs
+
+
+def get_ram_file(fname, mem_fs):
+    return mem_fs.openbin(fname)
 
 
 def folder2df(fpath=None):
