@@ -4,9 +4,11 @@ import math
 import random
 from PIL import ExifTags
 
+import jpeg4py as jpeg
 
-# Images Meta data
+
 def get_exif(im, remove_binary=True):
+    """returns dict of exif (meta) data if present"""
     if hasattr(im, '_getexif'):
         exif = {ExifTags.TAGS[k]: v
                 for k, v in im._getexif().items()
@@ -17,6 +19,17 @@ def get_exif(im, remove_binary=True):
         return exif
     else:
         return {}
+
+
+def imread_fast(fname):
+    """
+    same as imread or Image.open but 6x faster
+    installations: > sudo apt-get install libturbojpeg
+                   > pip install jpeg4py
+    input : file path as string
+    output: numpy array (HxWx3)
+    """
+    return jpeg.JPEG(fname).decode()
 
 
 def imread(fname):
