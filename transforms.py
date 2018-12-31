@@ -19,6 +19,7 @@ def conv_2d_filter(x):
     Reference: /reference/kernel.jpg
     transpose operations because pytorch has 3xHxW
     whereas cv2 used HxWx3
+    Can't normalize this
     """
     assert type(x) == PIL.Image.Image
     x = filter2D(np.array(x).astype(np.float32), -1, kernel_filter)

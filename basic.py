@@ -6,6 +6,7 @@ Description: Collection of useful functions for ML.
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from fs.osfs import OSFS
 from fs.memoryfs import MemoryFS
@@ -14,6 +15,11 @@ from fs.copy import copy_fs
 from IPython.display import display
 from fastprogress import progress_bar
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
+# set styling options similar to R's ggplot
+plt.style.use('ggplot')
+# setting image size for jupyter notebook env
+plt.rcParams['figure.figsize'] = [15.0, 6.0]
 
 
 def display_all(df):
@@ -31,7 +37,7 @@ def parallel(func, job_list, n_jobs=16):
     return [f.result() for f in futures]
 
 
-# In Memory
+# In-Memory
 def to_ram(dir_path):
     mem_fs = MemoryFS()
     with OSFS(dir_path) as data_fs:
