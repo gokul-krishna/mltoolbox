@@ -3,6 +3,9 @@
 """
 Description: Collection of useful functions for ML.
 """
+import os
+import math
+import time
 
 import numpy as np
 import pandas as pd
@@ -13,7 +16,7 @@ from fs.memoryfs import MemoryFS
 from fs.copy import copy_fs
 
 from IPython.display import display
-from fastprogress import progress_bar
+from fastprogress import progress_bar, master_bar
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # set styling options similar to R's ggplot
@@ -37,7 +40,7 @@ def parallel(func, job_list, n_jobs=16):
     return [f.result() for f in futures]
 
 
-# In-Memory
+# In-Memory file system
 def to_ram(dir_path):
     mem_fs = MemoryFS()
     with OSFS(dir_path) as data_fs:
@@ -66,3 +69,14 @@ def split_df(df, train_ratio=0.8):
     train.reset_index(inplace=True, drop=True)
     valid.reset_index(inplace=True, drop=True)
     return train, valid
+
+
+# decorator method for time profiling
+def timeit(method):
+    def timed(*args, **kw):
+        tik = time.time()
+        result = method(*args, **kw)
+        tok = time.time()
+        print(f"{method.__name__} {((tok - tik)):.2f} s")
+        return result
+    return timed
