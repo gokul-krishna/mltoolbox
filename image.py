@@ -82,3 +82,7 @@ stats_dict = {
 def normalize_image(im, stat_type='image_net'):
     stats = stats_dict[stat_type]
     return (im - stats[0]) / stats[1]
+
+
+def pil2cv(im):
+    return np.array(im)

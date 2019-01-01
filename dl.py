@@ -77,11 +77,13 @@ def plot_lr(log_lrs, losses, smooth_losses):
     plt.plot(log_lrs, losses, label='actual losses')
     plt.plot(log_lrs, smooth_losses, label='smoothed losses')
     plt.legend(loc='upper left')
+    plt.xlabel(r'$log_{10}(Learning Rates)$')
+    plt.ylabel('Losses')
     plt.show()
 
 
 def get_triangular_lr(lr_low=1e-5, lr_high=0.1,
-                      iterations, half_cycle_pct=0.45):
+                      iterations=None, half_cycle_pct=0.45):
 
     half_cycle = int(half_cycle_pct * iterations)
     left = iterations - 2 * half_cycle
