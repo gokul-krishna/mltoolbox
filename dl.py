@@ -1,8 +1,9 @@
-from .basic import (os, math, np, progress_bar, master_bar,
-                    timeit)
+from .basic import np, progress_bar, master_bar, print_time
 from .plotting import plt
 from .metrics import *
 
+import os
+import math
 import torch
 import torch.optim as optim
 import time
@@ -121,7 +122,7 @@ def val_metrics(model, valid_dl, mb=None, metric=binary_accuracy,
     return (sum_loss / total, correct / total)
 
 
-@timeit
+@print_time
 def train_triangular_policy(model, train_dl, valid_dl,
                             loss_criteria=None, lr_low=1e-5,
                             lr_high=0.01, epochs=4):

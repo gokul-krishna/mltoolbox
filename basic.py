@@ -72,7 +72,7 @@ def split_df(df, train_ratio=0.8):
 
 
 # decorator method for time profiling
-def timeit(method):
+def print_time(method):
     def timed(*args, **kw):
         tik = time.time()
         result = method(*args, **kw)
