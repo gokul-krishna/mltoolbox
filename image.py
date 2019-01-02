@@ -2,17 +2,18 @@ from .basic import np
 import cv2
 import math
 import random
-from PIL import ExifTags
+import PIL
 
 import jpeg4py as jpeg
 
 
 def get_exif(im, remove_binary=True):
     """returns dict of exif (meta) data if present"""
-    if hasattr(im, '_getexif'):
-        exif = {ExifTags.TAGS[k]: v
+    assert type(im) == PIL.JpegImagePlugin.JpegImageFile
+    if hasattr(im, '_getexif') and im._getexif() is not None:
+        exif = {PIL.ExifTags.TAGS[k]: v
                 for k, v in im._getexif().items()
-                if k in ExifTags.TAGS
+                if k in PIL.ExifTags.TAGS
                 }
         if remove_binary:
             exif = {k: exif[k] for k in exif if type(exif[k]) is not bytes}
@@ -62,14 +63,14 @@ def random_crop(im, height, width):
     return crop(im, start_r, start_c, height, width)
 
 
-def random_hflip(im):
-    if np.random.rand() >= .5:
+def random_hflip(im, prob=0.5):
+    if np.random.rand() <= prob:
         return np.fliplr(im).copy()
     return im
 
 
-def random_vflip(im):
-    if np.random.rand() >= .5:
+def random_vflip(im, prob=0.5):
+    if np.random.rand() <= prob:
         return np.flipud(im).copy()
     return im
 
@@ -86,3 +87,21 @@ def normalize_image(im, stat_type='image_net'):
 
 def pil2cv(im):
     return np.array(im)
+
+
+def vcyclic_shift(im, alpha=0.5):
+    h = im.shape[0]
+    s = np.random.uniform(0, alpha)
+    part = int(h * s)
+    im_ = im[:part, :]
+    _im = im[-h + part:, :]
+    return np.concatenate([_im, im_], axis=0)
+
+
+def hcyclic_shift(im, alpha=0.5):
+    w = im.shape[1]
+    s = np.random.uniform(0, alpha)
+    part = int(w * s)
+    im_ = im[:, :part]
+    _im = im[:, -w + part:]
+    return np.concatenate([_im, im_], axis=1)
