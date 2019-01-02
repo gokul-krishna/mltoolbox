@@ -79,11 +79,11 @@ def lr_range_finder(model, train_dl, loss_criteria=None,
 
 
 def plot_lr(log_lrs, losses, smooth_losses):
-    plt.plot(log_lrs, losses, label='actual losses')
-    plt.plot(log_lrs, smooth_losses, label='smoothed losses')
+    plt.plot(log_lrs, losses, label='actual loss')
+    plt.plot(log_lrs, smooth_losses, label='smoothed loss')
     plt.legend(loc='upper left')
-    plt.xlabel(r'$log_{10}(Learning Rates)$')
-    plt.ylabel('Losses')
+    plt.xlabel(r'$log_{10}(LearningRate)$')
+    plt.ylabel('Loss')
     plt.show()
 
 
@@ -112,11 +112,10 @@ def val_metrics(model, valid_dl, mb=None, metric=binary_accuracy,
     for x, y in progress_bar(valid_dl, parent=mb):
         batch = y.shape[0]
         x = x.float().cuda()
-        y = y.float().cuda().unsqueeze(1)
+        y = y.float().cuda()
         out = model(x)
-        pred = out.squeeze() > 0.5
-        correct += pred.float().eq(y.data).sum().item()
-        loss = loss_criteria(out, y.float())
+        correct += y.byte().eq((out.squeeze() > 0)).sum().item()
+        loss = loss_criteria(out, y.float().unsqueeze(1))
         sum_loss += batch * (loss.item())
         total += batch
     return (sum_loss / total, correct / total)
@@ -155,10 +154,12 @@ def train_triangular_policy(model, train_dl, valid_dl,
 
 
 def training_loop(model, train_dl, valid_dl, steps=3,
-                  lr_low=1e-6, lr_high=0.01, epochs=4):
+                  loss_criteria=None, lr_low=1e-6,
+                  lr_high=0.01, epochs=4):
     for i in range(steps):
         loss = train_triangular_policy(model, train_dl,
-                                       valid_dl, lr_low, lr_high, epochs)
+                                       loss_criteria, valid_dl,
+                                       lr_low, lr_high, epochs)
 
 
 def set_trainable_attr(model, b=True):
