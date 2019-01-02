@@ -47,7 +47,7 @@ def lr_range_finder(model, train_dl, loss_criteria=None,
     mb = master_bar(range(epochs))
     for ep in mb:
         for x, y in progress_bar(train_dl, parent=mb):
-            optimizer = get_optimizer(model, lr=lrs[btch_idx])
+            optimizer = get_optimizer(model=model, lr=lrs[btch_idx])
             btch_idx += 1
             x = x.float().cuda()
             y = y.float().cuda().unsqueeze(1)
@@ -135,19 +135,20 @@ def train_triangular_policy(model, train_dl, valid_dl,
         total = 0
         sum_loss = 0
         for x, y in progress_bar(train_dl, parent=mb):
-            optimizer = get_optimizer(model, lr=lrs[idx], wd=0)
+            optimizer = get_optimizer(model=model, lr=lrs[idx], wd=0)
             batch = y.shape[0]
             x = x.float().cuda()
-            y = y.float().cuda().unsqueeze(1)
+            y = y.float().cuda()
             out = model(x)
-            loss = loss_criteria(out, y)
+            loss = loss_criteria(out, y.float().unsqueeze(1))
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             idx += 1
             total += batch
             sum_loss += batch * (loss.item())
-        val_loss, val_acc = val_metrics(model, valid_dl)
+        val_loss, val_acc = val_metrics(model=model, valid_dl=valid_dl,
+                                        loss_criteria=loss_criteria)
         train_loss = sum_loss / total
         print(f"Epoch No.:{ep+1}, Train loss: {train_loss:.4f}, Valid loss: {val_loss:.4f}, Valid Acc: {val_acc:.4f}")
     return sum_loss / total
@@ -157,9 +158,11 @@ def training_loop(model, train_dl, valid_dl, steps=3,
                   loss_criteria=None, lr_low=1e-6,
                   lr_high=0.01, epochs=4):
     for i in range(steps):
-        loss = train_triangular_policy(model, train_dl,
-                                       loss_criteria, valid_dl,
-                                       lr_low, lr_high, epochs)
+        loss = train_triangular_policy(model=model, train_dl=train_dl,
+                                       valid_dl=valid_dl,
+                                       loss_criteria=loss_criteria,
+                                       lr_low=lr_low, lr_high=lr_high,
+                                       epochs=epochs)
 
 
 def set_trainable_attr(model, b=True):
