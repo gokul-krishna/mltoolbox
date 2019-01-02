@@ -8,15 +8,19 @@ import torch.optim as optim
 import time
 
 
-def save_model(m, path):
-    torch.save(m.state_dict(), path)
+def save_model(model, path):
+    torch.save(model.state_dict(), path)
 
 
-def load_model(m, path):
-    m.load_state_dict(torch.load(path))
+def load_model(model, path):
+    model.load_state_dict(torch.load(path))
 
 
 def get_optimizer(model, lr=0.01, wd=0.0, optimizer_type='adam'):
+    """
+    TODO: add support for this
+         https://pytorch.org/docs/stable/optim.html#per-parameter-options
+    """
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     optim = torch.optim.Adam(parameters, lr=lr, weight_decay=wd, )
     return optim
@@ -154,3 +158,13 @@ def training_loop(model, train_dl, valid_dl, steps=3,
     for i in range(steps):
         loss = train_triangular_policy(model, train_dl,
                                        valid_dl, lr_low, lr_high, epochs)
+
+
+def set_trainable_attr(model, b=True):
+    for p in model.parameters():
+        p.requires_grad = b
+
+
+def unfreeze(model, l, group_id='top_model'):
+    top_model = getattr(model, group_id)
+    set_trainable_attr(top_model[l])
