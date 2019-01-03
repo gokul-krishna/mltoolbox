@@ -41,6 +41,10 @@ def imread(fname):
     return cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
 
+def im_int2float(im):
+    return im.astype(np.float32) / 255
+
+
 def crop(im, r, c, height, width):
     """crop a image given left top pixel location and target size"""
     return im[r:r + height, c:c + width]
