@@ -105,6 +105,6 @@ def balance_dataset(df_orig, target_col=None):
             df = df.append(df_tmp[:(max_obs - v)], ignore_index=True)
         else:
             pass
-
+    np.random.seed(42)
     df = df.iloc[np.random.permutation(len(df))]
     return df.reset_index(drop=True)
