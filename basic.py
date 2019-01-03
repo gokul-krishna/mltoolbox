@@ -80,3 +80,31 @@ def print_time(method):
         print(f"{method.__name__} {((tok - tik)):.2f} s")
         return result
     return timed
+
+
+def balance_dataset(df_orig, target_col=None):
+
+    """
+    Inspiration: Thanos
+                **PERFECTLY BALANCED, AS ALL THINGS SHOULD BE**
+    Returns balanced version of dataset by replicating the observations of
+    imbalanced classes.
+    """
+
+    df = df_orig.copy(deep=True)
+    obs_dict = df[target_col].value_counts().to_dict()
+    max_obs = max(obs_dict.values())
+
+    for k, v in obs_dict.items():
+        t = math.ceil(max_obs / v)
+        if t > 1:
+            df_tmp = pd.DataFrame(columns=df.columns)
+            df_append = df[df[target_col] == k]
+            for i in range(t - 1):
+                df_tmp = df_tmp.append(df_append, ignore_index=True)
+            df = df.append(df_tmp[:(max_obs - v)], ignore_index=True)
+        else:
+            pass
+
+    df = df.iloc[np.random.permutation(len(df))]
+    return df.reset_index(drop=True)
