@@ -3,6 +3,7 @@ import cv2
 import math
 import random
 import PIL
+import torch
 
 import jpeg4py as jpeg
 
@@ -105,3 +106,7 @@ def hcyclic_shift(im, alpha=0.5):
     im_ = im[:, :part]
     _im = im[:, -w + part:]
     return np.concatenate([_im, im_], axis=1)
+
+
+def im2tensor(im):
+    return torch.tensor(np.rollaxis(im, 2), dtype=torch.float32)
