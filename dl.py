@@ -63,7 +63,7 @@ def lr_range_finder(model, train_dl, loss_criteria=None,
 
             # Stop if the loss is exploding
             if btch_idx > 1 and smoothed_loss > 4 * best_loss:
-                return log_lrs[:btch_idx], losses, smooth_losses
+                return log_lrs[:(btch_idx - 1)], losses, smooth_losses
 
             # Record the best loss
             if smoothed_loss < best_loss or btch_idx == 1:
@@ -188,3 +188,22 @@ def set_trainable_attr(model, b=True):
 def unfreeze(model, l, group_id='top_model'):
     top_model = getattr(model, group_id)
     set_trainable_attr(top_model[l])
+
+
+def predict(model, data_dl, is_valid=False):
+    if is_valid:
+        y_true = []
+    y_pred = []
+    model.eval()
+    for x, y in progress_bar(data_dl):
+        x = x.float().cuda()
+        out = model(x)
+        y_pred.append(out.squeeze().detach().cpu() > 0)
+        if is_valid:
+            y_true.append(y.cpu().numpy())
+    y_pred = np.concatenate(y_pred)
+    if is_valid:
+        y_true = np.concatenate(y_true)
+    if is_valid:
+        return y_pred, y_true
+    return y_pred
