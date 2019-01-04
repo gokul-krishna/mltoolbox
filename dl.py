@@ -113,7 +113,7 @@ def val_metrics(model, valid_dl, mb=None, metrics=[accuracy_score],
     y_true = []
     y_pred = []
 
-    for x, y in progress_bar(valid_dl, parent=mb, leave=(mb is not None)):
+    for x, y in progress_bar(valid_dl, parent=mb, leave=(mb is None)):
         batch = y.shape[0]
         x = x.float().cuda()
         y = y.float().cuda()
