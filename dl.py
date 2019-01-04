@@ -113,7 +113,7 @@ def val_metrics(model, valid_dl, mb=None, metrics=[accuracy_score],
     y_true = []
     y_pred = []
 
-    for x, y in progress_bar(valid_dl, parent=mb):
+    for x, y in progress_bar(valid_dl, parent=mb, leave=(mb is not None)):
         batch = y.shape[0]
         x = x.float().cuda()
         y = y.float().cuda()
@@ -160,7 +160,7 @@ def train_triangular_policy(model, train_dl, valid_dl,
             idx += 1
             total += batch
             sum_loss += batch * (loss.item())
-        val_res = val_metrics(model=model, valid_dl=valid_dl,
+        val_res = val_metrics(model=model, valid_dl=valid_dl, mb=mb,
                               loss_criteria=loss_criteria, metrics=metrics)
         train_loss = sum_loss / total
         print_metric = f"Epoch No.:{ep+1}, Train loss: {train_loss:.4f}, "
