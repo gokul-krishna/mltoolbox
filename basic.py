@@ -82,12 +82,10 @@ def print_time(method):
     return timed
 
 
-def balance_dataset(df_orig, target_col=None):
+def balance_dataset(df_orig, target_col=None, alpha=0.5):
 
     """
-    Inspiration: Thanos
-                **PERFECTLY BALANCED, AS ALL THINGS SHOULD BE**
-    Returns balanced version of dataset by replicating the observations of
+    Returns more balanced version of dataset by replicating the observations of
     imbalanced classes.
     """
 
@@ -96,13 +94,15 @@ def balance_dataset(df_orig, target_col=None):
     max_obs = max(obs_dict.values())
 
     for k, v in obs_dict.items():
-        t = math.ceil(max_obs / v)
+        t = math.ceil((max_obs * alpha) / v)
         if t > 1:
             df_tmp = pd.DataFrame(columns=df.columns)
             df_append = df[df[target_col] == k]
             for i in range(t - 1):
                 df_tmp = df_tmp.append(df_append, ignore_index=True)
-            df = df.append(df_tmp[:(max_obs - v)], ignore_index=True)
+            df_tmp = df_tmp.iloc[np.random.permutation(len(df_tmp))]
+            df_tmp.reset_index(drop=True, inplace=True)
+            df = df.append(df_tmp[:int((t - 1) * v)], ignore_index=True)
         else:
             pass
     np.random.seed(42)
