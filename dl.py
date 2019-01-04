@@ -8,6 +8,8 @@ import torch
 import torch.optim as optim
 import time
 
+from sklearn.metrics import accuracy_score
+
 
 def save_model(model, path):
     torch.save(model.state_dict(), path)
@@ -103,28 +105,39 @@ def get_triangular_lr(lr_low=1e-5, lr_high=0.1,
     return lrs, mom
 
 
-def val_metrics(model, valid_dl, mb=None, metric=binary_accuracy,
+def val_metrics(model, valid_dl, mb=None, metrics=[accuracy_score],
                 loss_criteria=None):
 
     model.eval()
-    total, sum_loss, correct = 0., 0., 0
+    total, sum_loss = 0., 0.
+    y_true = []
+    y_pred = []
 
     for x, y in progress_bar(valid_dl, parent=mb):
         batch = y.shape[0]
         x = x.float().cuda()
         y = y.float().cuda()
         out = model(x)
-        correct += y.byte().eq((out.squeeze() > 0)).sum().item()
         loss = loss_criteria(out, y.float().unsqueeze(1))
         sum_loss += batch * (loss.item())
         total += batch
-    return (sum_loss / total, correct / total)
+        y_pred.append(out.squeeze().detach().cpu() > 0)
+        y_true.append(y.cpu().numpy())
+    y_pred = np.concatenate(y_pred)
+    y_true = np.concatenate(y_true)
+
+    result = {}
+    result['val_loss'] = sum_loss / total
+    for m in metrics:
+        result[m.__name__] = m(y_pred=y_pred, y_true=y_true)
+
+    return result
 
 
 @print_time
 def train_triangular_policy(model, train_dl, valid_dl,
                             loss_criteria=None, lr_low=1e-5,
-                            lr_high=0.01, epochs=4):
+                            lr_high=0.01, epochs=4, metrics=[accuracy_score]):
     idx = 0
     iterations = epochs * len(train_dl)
     lrs, mom = get_triangular_lr(lr_low, lr_high, iterations)
@@ -147,22 +160,24 @@ def train_triangular_policy(model, train_dl, valid_dl,
             idx += 1
             total += batch
             sum_loss += batch * (loss.item())
-        val_loss, val_acc = val_metrics(model=model, valid_dl=valid_dl,
-                                        loss_criteria=loss_criteria)
+        val_res = val_metrics(model=model, valid_dl=valid_dl,
+                              loss_criteria=loss_criteria, metrics=metrics)
         train_loss = sum_loss / total
-        print(f"Epoch No.:{ep+1}, Train loss: {train_loss:.4f}, Valid loss: {val_loss:.4f}, Valid Acc: {val_acc:.4f}")
-    return sum_loss / total
+        print_metric = f"Epoch No.:{ep+1}, Train loss: {train_loss:.4f}, "
+        print_metric += ''.join([f"{k}: {v:.4f}, " for k, v in val_res.items()])
+        print(print_metric)
+    return True
 
 
 def training_loop(model, train_dl, valid_dl, steps=3,
                   loss_criteria=None, lr_low=1e-6,
-                  lr_high=0.01, epochs=4):
+                  lr_high=0.01, epochs=4, metrics=[accuracy_score]):
     for i in range(steps):
         loss = train_triangular_policy(model=model, train_dl=train_dl,
                                        valid_dl=valid_dl,
                                        loss_criteria=loss_criteria,
                                        lr_low=lr_low, lr_high=lr_high,
-                                       epochs=epochs)
+                                       epochs=epochs, metrics=metrics)
 
 
 def set_trainable_attr(model, b=True):
