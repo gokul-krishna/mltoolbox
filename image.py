@@ -94,19 +94,29 @@ def pil2cv(im):
     return np.array(im)
 
 
-def vcyclic_shift(im, alpha=0.5):
+def vcyclic_shift(im, alpha=0.5, no_blocks=1):
     h = im.shape[0]
-    s = np.random.uniform(0, alpha)
-    part = int(h * s)
+    if no_blocks > 1:
+        block_len = round(h / no_blocks)
+        s = np.random.randint(0, int(alpha * no_blocks))
+        part = int(s * block_len)
+    else:
+        s = np.random.uniform(0, alpha)
+        part = int(h * s)
     im_ = im[:part, :]
     _im = im[-h + part:, :]
     return np.concatenate([_im, im_], axis=0)
 
 
-def hcyclic_shift(im, alpha=0.5):
+def hcyclic_shift(im, alpha=0.5, no_blocks=1):
     w = im.shape[1]
-    s = np.random.uniform(0, alpha)
-    part = int(w * s)
+    if no_blocks > 1:
+        block_len = round(w / no_blocks)
+        s = np.random.randint(0, int(alpha * no_blocks))
+        part = int(s * block_len)
+    else:
+        s = np.random.uniform(0, alpha)
+        part = int(w * s)
     im_ = im[:, :part]
     _im = im[:, -w + part:]
     return np.concatenate([_im, im_], axis=1)
