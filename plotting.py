@@ -1,7 +1,9 @@
 from .basic import *
-from PIL import Image
 
 import itertools
+import seaborn as sns
+from PIL import Image
+from matplotlib.colors import LogNorm
 
 # set styling options similar to R's ggplot
 plt.style.use('ggplot')
