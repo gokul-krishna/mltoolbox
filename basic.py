@@ -6,6 +6,8 @@ Description: Collection of useful functions for ML.
 import os
 import math
 import time
+import types
+import subprocess
 
 import numpy as np
 import pandas as pd
@@ -108,3 +110,28 @@ def balance_dataset(df_orig, target_col=None, alpha=0.5):
     np.random.seed(42)
     df = df.iloc[np.random.permutation(len(df))]
     return df.reset_index(drop=True)
+
+
+def call_subprocess(bash_cmd):
+    """
+    ex: args = call_subprocess('libreoffice --convert-to pdf fname.docx_')
+    """
+
+    process = subprocess.Popen(bash_cmd.split(' '), stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    process.wait()
+    return True
+
+
+skip_instances_tuple = (types.BuiltinFunctionType, types.MethodType,
+                        types.BuiltinMethodType, types.FunctionType)
+
+
+def print_object_attrs(obj):
+
+    object_attributes = [atr for atr in obj.__dir__() if not atr.startswith('__')]
+
+    for atr in object_attributes:
+        t = getattr(obj, atr)
+        if not isinstance(t, skip_instances_tuple):
+            print(f"{atr}: {getattr(obj, atr)} \n")

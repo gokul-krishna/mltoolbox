@@ -7,6 +7,7 @@ import math
 import torch
 import torch.optim as optim
 import time
+import subprocess
 
 from sklearn.metrics import accuracy_score
 
@@ -19,10 +20,11 @@ def load_model(model, path):
     model.load_state_dict(torch.load(path))
 
 
-def get_optimizer(model, lr=0.01, wd=0.0, optimizer_type='adam'):
+def get_optimizer(model, lr=0.01, wd=5e-4, optimizer_type='adam'):
     """
     TODO: add support for this
          https://pytorch.org/docs/stable/optim.html#per-parameter-options
+         https://discuss.pytorch.org/t/implementing-differential-learning-rate-by-parameter-groups/32903
     """
     parameters = filter(lambda p: p.requires_grad, model.parameters())
     optim = torch.optim.Adam(parameters, lr=lr, weight_decay=wd, )
@@ -204,6 +206,5 @@ def predict(model, data_dl, is_valid=False):
     y_pred = np.concatenate(y_pred)
     if is_valid:
         y_true = np.concatenate(y_true)
-    if is_valid:
         return y_pred, y_true
     return y_pred
