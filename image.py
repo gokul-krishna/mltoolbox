@@ -1,4 +1,4 @@
-from .basic import np
+from .basic import np, plt
 import cv2
 import math
 import random
@@ -124,3 +124,62 @@ def hcyclic_shift(im, alpha=0.5, no_blocks=1):
 
 def im2tensor(im):
     return torch.tensor(np.rollaxis(im, 2), dtype=torch.float32)
+
+
+def create_bb_rect(bb, color='red'):
+    """creates a rect bounding box, used in bounding box visualization"""
+    ymin, xmin, ymax, xmax = bb
+    bb = np.array(bb, dtype=np.float32)
+    return plt.Rectangle(xy=(xmin, ymin), width=(xmax - xmin),
+                         height=(ymax - ymin), color=color,
+                         fill=False, lw=3)
+
+
+def show_bb(im, bb):
+    """show image with bounding box"""
+    plt.imshow(im)
+    plt.gca().add_patch(create_bb_rect(bb))
+
+
+def random_crop_bb(im, height, width, bb):
+    r, c, _ = im.shape
+    ymin, xmin, ymax, xmax = bb
+    start_r = math.floor(random.uniform(max(0, (ymax - height)),
+                                        min(ymin, (r - height))))
+    start_c = math.floor(random.uniform(max(0, (xmax - width)),
+                                        min(xmin, (c - width))))
+    new_bb = [(ymin - start_r), (xmin - start_c),
+              (ymax - start_r), (xmax - start_c)]
+    return crop(im, start_r, start_c, height, width), new_bb
+
+
+class InvalidInputException(Exception):
+    pass
+
+
+def resize_bb(im, bb, new_height=None, new_width=None, scale=0.5):
+    """resizes image and bounding box together"""
+    r, c, _ = im.shape
+    ymin, xmin, ymax, xmax = bb
+    if new_height is None and new_width is None and scale is not None:
+        # keeping the same aspect ratio as original
+        new_height = int(scale * r)
+        new_width = int(scale * c)
+    elif new_height is None and new_width is not None:
+        # use the scale based on old and new width
+        scale = float(new_width) / float(c)
+        new_height = int(scale * r)
+    elif new_height is not None and new_width is None:
+        # use the scale based on old and new height
+        scale = float(new_height) / float(r)
+        new_width = int(scale * c)
+    elif new_height is not None and new_width is not None:
+        # just use the new height and old height
+        pass
+    else:
+        raise InvalidInputException('Invalid input configuration')
+
+    imr = cv2.resize(im, (new_width, new_height))
+    new_bb = [int((ymin / r) * new_height), int((xmin / c) * new_width),
+              int((ymax / r) * new_height), int((xmax / c) * new_width)]
+    return imr, new_bb
