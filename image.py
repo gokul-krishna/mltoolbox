@@ -26,7 +26,8 @@ def get_exif(im, remove_binary=True):
 def imread_fast(fname):
     """
     same as imread or Image.open but 6x faster
-    installations: > sudo apt-get install libturbojpeg
+    installations: > apt-get install libturbojpeg
+                   > brew install libjpeg-turbo / libjpeg
                    > pip install jpeg4py
     input : file path as string
     output: numpy array (HxWx3)
@@ -212,4 +213,5 @@ def resize_bb(im, bb, new_height=None, new_width=None, scale=0.5):
 
 
 def imsave(im, fname, extension='.jpg'):
+    im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
     return cv2.imwrite(fname + extension, im)
