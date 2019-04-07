@@ -124,3 +124,19 @@ def hcyclic_shift(im, alpha=0.5, no_blocks=1):
 
 def im2tensor(im):
     return torch.tensor(np.rollaxis(im, 2), dtype=torch.float32)
+
+
+def im_squared(im, col=[255, 255, 255]):
+    v, h = im.shape[0], im.shape[1]
+    diff = abs(h - v)
+    pad = int(diff / 2)
+    if v > h:
+        return cv2.copyMakeBorder(im, 0, 0, pad, pad,
+                                  cv2.BORDER_CONSTANT, value=col)
+    else:
+        return cv2.copyMakeBorder(im, pad, pad, 0, 0,
+                                  cv2.BORDER_CONSTANT, value=col)
+
+
+def imsave(im, fname):
+    cv2.imwrite(fname, cv2.cvtColor(im, cv2.COLOR_RGB2BGR))

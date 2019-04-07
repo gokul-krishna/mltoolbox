@@ -54,9 +54,9 @@ def get_ram_file(fname, mem_fs):
     return mem_fs.openbin(fname)
 
 
-def folder2df(fpath=None):
+def folder2df(fpath=None, extension='jpg'):
     if fpath is not None:
-        fnames = sorted(fpath.glob('**/*.jpg'))
+        fnames = sorted(fpath.glob(f'**/*.{extension}'))
         df = pd.DataFrame(fnames, columns=['fname'])
         df['label'] = df['fname'].apply(lambda x: str(x).split('/')[-2]
                                         ).astype('category')
